@@ -1,5 +1,5 @@
 [package]
-name = "teleport"
+name = "tp"
 version = "0.1.0"
 authors = ["Calvin D. Woo <calvin.d.woo@gmail.com>g"]
 edition = "2021"

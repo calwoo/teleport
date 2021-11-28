@@ -1,4 +1,5 @@
 extern crate clap;
+extern crate ansi_term;
 
 use std::env::var;
 use std::path::Path;
@@ -87,5 +88,11 @@ fn main() {
 }
 
 fn list_warp_points(metadata_vec: &Vec<WarpPoint>) {
-    println!("teleport points: (total {})", metadata_vec.len());
+    println!("teleport points: {}", 
+             ansi_term::Colour::Blue
+                .bold()
+                .paint(format!("(total {})", metadata_vec.len())));
+
+    // iterate through metadata and list warp points
+    
 }

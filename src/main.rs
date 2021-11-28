@@ -2,8 +2,8 @@ extern crate clap;
 
 use std::env::var;
 use std::path::Path;
-use std::fs::OpenOptions;
-use std::io::Read;
+use std::fs::{File, OpenOptions};
+use std::io::{Read, Write};
 
 use serde::{Serialize, Deserialize};
 use clap::{Arg, App, SubCommand};
@@ -49,23 +49,43 @@ fn main() {
     let matches = app.get_matches();
 
     // initialize tp metadata
-    let metadata_path: String = format!("{}/.tp/points.json", var("HOME").unwrap());
+    let metadata_path: String = format!("{}/.tp/", var("HOME").unwrap());
     if !Path::new(&metadata_path).exists() {
-        println!("First time run: `tp` metadata initialized.");
+        println!("First time run: `tp` metadata initialized at {}", metadata_path);
+        std::fs::create_dir(&metadata_path);
     }
 
-    println!("{}", metadata_path);
-    let metadata_file = OpenOptions::new()
-                                .write(true)
-                                .create(true)
-                                .open("~/points.json")
-                                .unwrap();
+    let mut metadata_file_read = OpenOptions::new()
+                                    .read(true)
+                                    .write(true)
+                                    .create(true)
+                                    .open(Path::new(&metadata_path).join("points.json"))
+                                    .unwrap();
 
-    // let mut metadata_file = File::open(&metadata_path).unwrap();
-    println!("lol");
-    // let mut metadata: String = String::new();
-    // metadata_file.read_to_string(&mut metadata).unwrap();
+    // let mut metadata_file = File::open("/home/hyperion/.tp/points.json").unwrap();
+    let mut metadata = String::new();
+    metadata_file_read.read_to_string(&mut metadata).expect("Unable to read string");
 
-    // let mut metadata_vec: Vec<WarpPoint> = serde_json::from_str(&metadata).unwrap();
-    // println!("{:?}", metadata_vec);
+    let mut metadata_vec: Vec<WarpPoint> = match serde_json::from_str(&metadata) {
+        Ok(v) => v,
+        Err(_) => Vec::<WarpPoint>::new(),
+    };
+
+    match matches.subcommand_name() {
+        Some("list") => list_warp_points(&metadata_vec),
+        _ => println!("No subcommand was used"),
+    };
+
+    // write metadata
+    let metadata_str: String = serde_json::to_string(&metadata_vec).unwrap();
+    let mut metadata_file_write = OpenOptions::new()
+                                    .write(true)
+                                    .truncate(true)
+                                    .open(Path::new(&metadata_path).join("points.json"))
+                                    .unwrap();
+    writeln!(&mut metadata_file_write, "{}", &metadata_str).unwrap();
+}
+
+fn list_warp_points(metadata_vec: &Vec<WarpPoint>) {
+    println!("teleport points: (total {})", metadata_vec.len());
 }

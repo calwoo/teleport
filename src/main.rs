@@ -1,5 +1,25 @@
 extern crate clap;
+
+use std::env::var;
+use std::path::Path;
+use std::fs::OpenOptions;
+use std::io::Read;
+
+use serde::{Serialize, Deserialize};
 use clap::{Arg, App, SubCommand};
+
+#[derive(Serialize, Deserialize, Debug)]
+struct WarpPoint {
+    id: i32,
+    name: String,
+    path: String,
+}
+
+impl WarpPoint {
+    fn new(id: i32, name: String, path: String) -> Self {
+        WarpPoint { id, name, path }
+    }
+}
 
 fn main() {
     let app = App::new("tp")
@@ -27,4 +47,25 @@ fn main() {
                                         .help("Warp point to warp to")));
 
     let matches = app.get_matches();
+
+    // initialize tp metadata
+    let metadata_path: String = format!("{}/.tp/points.json", var("HOME").unwrap());
+    if !Path::new(&metadata_path).exists() {
+        println!("First time run: `tp` metadata initialized.");
+    }
+
+    println!("{}", metadata_path);
+    let metadata_file = OpenOptions::new()
+                                .write(true)
+                                .create(true)
+                                .open("~/points.json")
+                                .unwrap();
+
+    // let mut metadata_file = File::open(&metadata_path).unwrap();
+    println!("lol");
+    // let mut metadata: String = String::new();
+    // metadata_file.read_to_string(&mut metadata).unwrap();
+
+    // let mut metadata_vec: Vec<WarpPoint> = serde_json::from_str(&metadata).unwrap();
+    // println!("{:?}", metadata_vec);
 }

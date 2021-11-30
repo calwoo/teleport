@@ -2,8 +2,8 @@ extern crate clap;
 extern crate ansi_term;
 
 use std::env::var;
-use std::path::Path;
-use std::fs::{File, OpenOptions};
+use std::path::{Path, PathBuf};
+use std::fs::{OpenOptions, canonicalize};
 use std::io::{Read, Write};
 
 use serde::{Serialize, Deserialize};
@@ -13,11 +13,11 @@ use clap::{Arg, App, SubCommand};
 struct WarpPoint {
     id: i32,
     name: String,
-    path: String,
+    path: PathBuf,
 }
 
 impl WarpPoint {
-    fn new(id: i32, name: String, path: String) -> Self {
+    fn new(id: i32, name: String, path: PathBuf) -> Self {
         WarpPoint { id, name, path }
     }
 }
@@ -72,8 +72,23 @@ fn main() {
         Err(_) => Vec::<WarpPoint>::new(),
     };
 
-    match matches.subcommand_name() {
-        Some("list") => list_warp_points(&metadata_vec),
+    println!("{:?}", matches.subcommand());
+    match matches.subcommand() {
+        ("add", Some(add_matches)) => {
+            let warppath = match add_matches.value_of("warppath") {
+                Some(wp_path) => wp_path,
+                None => ".",
+            };
+            add_warp_point(&mut metadata_vec, add_matches.value_of("warpname").unwrap(), warppath);
+        },
+        ("list", _) => list_warp_points(&metadata_vec),
+        ("remove", Some(remove_matches)) => {
+            let warpname = match remove_matches.value_of("warp point") {
+                Some(wp_name) => wp_name,
+                None => ".",
+            };
+            remove_warp_point(&mut metadata_vec, wp_name);
+        }
         _ => println!("No subcommand was used"),
     };
 
@@ -94,5 +109,38 @@ fn list_warp_points(metadata_vec: &Vec<WarpPoint>) {
                 .paint(format!("(total {})", metadata_vec.len())));
 
     // iterate through metadata and list warp points
-    
+    for wp in metadata_vec {
+        println!("{}\t{}",
+                 wp.name,
+                 ansi_term::Colour::Blue
+                    .bold()
+                    .paint(format!("{:?}", wp.path)));
+    }
+}
+
+fn add_warp_point(metadata_vec: &mut Vec<WarpPoint>, warpname: &str, warppath: &str) {
+    // check if warp point already exists
+    for wp in metadata_vec.iter() {
+        if warpname == wp.name {
+            println!("warp point already created with that name!");
+            return
+        }
+    }
+
+    println!("creating warp point:");
+    let n_warp_points: i32 = metadata_vec.len() as i32;
+    let canonicalized_warp_path = canonicalize(&PathBuf::from(warppath)).unwrap();
+
+    println!("{}\t{}",
+             warpname,
+             ansi_term::Colour::Blue
+                    .bold()
+                    .paint(format!("{:?}", &canonicalized_warp_path)));
+
+    let new_warppoint: WarpPoint = WarpPoint::new(n_warp_points, warpname.to_string(), canonicalized_warp_path);
+    metadata_vec.push(new_warppoint);
+}
+
+fn remove_warp_point(metadata_vec: &mut Vec<WarpPoint>, warpname: &str) {
+    // 
 }

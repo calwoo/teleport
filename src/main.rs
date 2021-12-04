@@ -87,7 +87,7 @@ fn main() {
                 Some(wp_name) => wp_name,
                 None => ".",
             };
-            remove_warp_point(&mut metadata_vec, wp_name);
+            remove_warp_point(&mut metadata_vec, warpname);
         }
         _ => println!("No subcommand was used"),
     };

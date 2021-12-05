@@ -142,5 +142,27 @@ fn add_warp_point(metadata_vec: &mut Vec<WarpPoint>, warpname: &str, warppath: &
 }
 
 fn remove_warp_point(metadata_vec: &mut Vec<WarpPoint>, warpname: &str) {
-    // 
+    // iterate through metadata to remove named warppoint and shift ids
+    let mut id: i32 = 0;
+    let pre_remove_len: i32 = metadata_vec.len() as i32;
+
+    metadata_vec
+        .iter_mut()
+        .for_each(|item: &mut WarpPoint| {
+            if item.name == warpname {
+                item.id = -1;
+                println!("removed warp point [{}]", 
+                         ansi_term::Colour::Blue
+                                .bold()
+                                .paint(format!("{}", warpname)));
+            } else {
+                item.id = id;
+                id += 1;
+            }
+        });
+
+    metadata_vec.retain(|item: &WarpPoint| item.id > -1);
+    if pre_remove_len == (metadata_vec.len() as i32) {
+        println!("no warp point removed");
+    }
 }

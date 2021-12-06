@@ -1,5 +1,7 @@
 #! /bin/bash
 
+# NOTE: put this function in your .bashrc
+
 function tp() {
     OUTPUT=$( tp-exe $@ )
 

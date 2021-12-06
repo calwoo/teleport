@@ -5,6 +5,7 @@ use std::env::var;
 use std::path::{Path, PathBuf};
 use std::fs::{OpenOptions, canonicalize};
 use std::io::{Read, Write};
+use std::process::exit;
 
 use serde::{Serialize, Deserialize};
 use clap::{Arg, App, SubCommand};
@@ -72,7 +73,6 @@ fn main() {
         Err(_) => Vec::<WarpPoint>::new(),
     };
 
-    println!("{:?}", matches.subcommand());
     match matches.subcommand() {
         ("add", Some(add_matches)) => {
             let warppath = match add_matches.value_of("warppath") {
@@ -88,7 +88,14 @@ fn main() {
                 None => ".",
             };
             remove_warp_point(&mut metadata_vec, warpname);
-        }
+        },
+        ("warp", Some(warp_matches)) => {
+            let warpname = match warp_matches.value_of("warp point") {
+                Some(wp_name) => wp_name,
+                None => "."
+            };
+            activate_warp_point(&mut metadata_vec, warpname);
+        },
         _ => println!("No subcommand was used"),
     };
 
@@ -165,4 +172,17 @@ fn remove_warp_point(metadata_vec: &mut Vec<WarpPoint>, warpname: &str) {
     if pre_remove_len == (metadata_vec.len() as i32) {
         println!("no warp point removed");
     }
+}
+
+fn activate_warp_point(metadata_vec: &Vec<WarpPoint>, warpname: &str) {
+    // iterate through warp points, emitting path name at match
+    for wp in metadata_vec {
+        if wp.name == warpname {
+            println!("{:?}", wp.path);
+            exit(4);
+        }
+    }
+
+    // output error message if no warppoint found with that name
+    println!("no warp point found with that name!");
 }

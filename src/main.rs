@@ -121,7 +121,7 @@ fn list_warp_points(metadata_vec: &Vec<WarpPoint>) {
                  wp.name,
                  ansi_term::Colour::Blue
                     .bold()
-                    .paint(format!("{:?}", wp.path)));
+                    .paint(format!("{}", wp.path.to_string_lossy())));
     }
 }
 
@@ -142,7 +142,7 @@ fn add_warp_point(metadata_vec: &mut Vec<WarpPoint>, warpname: &str, warppath: &
              warpname,
              ansi_term::Colour::Blue
                     .bold()
-                    .paint(format!("{:?}", &canonicalized_warp_path)));
+                    .paint(format!("{}", &canonicalized_warp_path.to_string_lossy())));
 
     let new_warppoint: WarpPoint = WarpPoint::new(n_warp_points, warpname.to_string(), canonicalized_warp_path);
     metadata_vec.push(new_warppoint);
@@ -178,7 +178,7 @@ fn activate_warp_point(metadata_vec: &Vec<WarpPoint>, warpname: &str) {
     // iterate through warp points, emitting path name at match
     for wp in metadata_vec {
         if wp.name == warpname {
-            println!("{:?}", wp.path);
+            println!("{}", wp.path.to_string_lossy());
             exit(4);
         }
     }
